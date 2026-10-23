@@ -57,9 +57,9 @@ sequenceDiagram
     B->>B: Render report, colour and mark cited log lines
 ```
 
-The log is shown with line numbers. Red lines are errors, amber lines are warnings, and a blue edge marks the lines the report uses as evidence:
+The log is shown with line numbers. Red lines are errors, amber lines are warnings, and a blue edge marks the lines the report uses as evidence. The report opens with the severity and a timeline of errors and warnings per minute (click a bar to jump to that part of the log):
 
-![Report with severity, summary and likely cause](project_screenshots/02_report.png)
+![Report with severity and timeline chart](project_screenshots/02_report.png)
 
 **Errors and warnings table:** counted by code, not by the AI:
 
