@@ -4,8 +4,6 @@ Paste application logs and get a structured incident report: severity, likely ca
 
 **Live demo:** https://incident-analyzer.onrender.com
 
-![Incident Analyzer home screen](project_screenshots/01_home.png)
-
 ---
 
 ## 1. The analysis pipeline
@@ -62,42 +60,6 @@ sequenceDiagram
 The log is shown with line numbers. Red lines are errors, amber lines are warnings, and a blue edge marks the lines the report uses as evidence:
 
 ![Report with severity, summary and likely cause](project_screenshots/02_report.png)
-
----
-
-## 3. From JSON to screen
-
-```mermaid
-flowchart LR
-    subgraph JSON["AI JSON + code counts"]
-        s1["severity"]
-        s3["summary"]
-        s4["likely_cause<br/>confidence · evidence · assumptions"]
-        s5["missing_information"]
-        s6["key_errors (from code)"]
-        s7["troubleshooting_steps"]
-        s8["escalation"]
-        s9["incident_summary"]
-    end
-    subgraph UI["Report panel"]
-        u1["Coloured severity banner"]
-        u3["Summary"]
-        u4["Likely cause + clickable L### evidence"]
-        u5["Information needed to go further"]
-        u6["Errors and warnings table"]
-        u7["What to check first"]
-        u8["Escalate · Team · When"]
-        u9["Copy-ready team message"]
-    end
-    s1-->u1
-    s3-->u3
-    s4-->u4
-    s5-->u5
-    s6-->u6
-    s7-->u7
-    s8-->u8
-    s9-->u9
-```
 
 **Errors and warnings table:** counted by code, not by the AI:
 
