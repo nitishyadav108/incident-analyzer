@@ -40,7 +40,6 @@
   .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3B82F6, #22D3EE); display: grid; place-items: center; box-shadow: 0 2px 8px rgba(59, 130, 246, .5); }
   .topbar h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: .2px; }
   .topbar p { margin: 0; font-size: 13px; color: #A9B7CC; }
-  .topbar .chip { margin-left: auto; font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .1); color: #CFDAEA; border: 1px solid rgba(255, 255, 255, .15); }
 
   .layout { display: grid; grid-template-columns: minmax(340px, 5fr) 6fr; height: calc(100vh - 60px); }
   .pane { overflow: auto; min-height: 0; }
@@ -189,10 +188,23 @@
   .chart .bar { cursor: pointer; }
   .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
   .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .tip { position: absolute; pointer-events: none; background: #0F1B2D; color: #fff; font-size: 12.5px; padding: 8px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 4px 14px rgba(15, 27, 45, .25); transform: translate(-50%, calc(-100% - 10px)); z-index: 2; }
+  .tip { position: absolute; pointer-events: none; background: #F8FAFC; color: var(--ink); font-size: 12.5px; padding: 8px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); transform: translate(-50%, calc(-100% - 10px)); z-index: 2; }
   .tip b { font-weight: 600; }
   .tip .row { display: flex; align-items: center; gap: 6px; }
-  .tip .hint { color: #A9B7CC; margin-top: 2px; }
+  .tip .hint { color: var(--muted); margin-top: 2px; }
+
+  /* Dark console panel for the timeline */
+  .console { background: radial-gradient(120% 140% at 0% 0%, #1B2B4B 0%, #0F1B2D 55%, #0B1424 100%); border-color: #1E2D4A; color: #E2E8F0; }
+  .console-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .console h3 { color: #F8FAFC; margin: 0; }
+  .console h3 .ic { background: rgba(255, 255, 255, .08); color: #93C5FD; }
+  .console .chart-legend { color: #94A3B8; margin: 8px 0 0; }
+  .live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #94A3B8; }
+  .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #F04438; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(240, 68, 56, .6); } 70%, 100% { box-shadow: 0 0 0 8px rgba(240, 68, 56, 0); } }
+  .kpis { display: flex; gap: 28px; margin: 14px 0 10px; }
+  .kpi .k { font-size: 11.5px; color: #94A3B8; text-transform: uppercase; letter-spacing: .5px; }
+  .kpi .v { font-size: 22px; font-weight: 700; color: #F8FAFC; }
 
   dl.esc { display: grid; grid-template-columns: 90px 1fr; gap: 8px 12px; margin: 0; }
   dl.esc dt { color: var(--muted); } dl.esc dd { margin: 0; }
@@ -211,10 +223,10 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .stat:nth-child(2) { border-right: 0; }
     .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
-    .topbar .chip, .topbar p { display: none; }
+    .topbar p { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .line.flash, .skel { animation: none; }
+    .line.flash, .skel, .live::before { animation: none; }
   }
 </style>
 </head>
@@ -223,7 +235,6 @@
   <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 12 7 12 10 4 14 20 17 12 21 12"/></svg></div>
   <h1>Incident Analyzer</h1>
   <p>Log triage for payment operations</p>
-  <span class="chip">AI-assisted · verify before acting</span>
 </div>
 
 <div class="layout">
@@ -424,9 +435,9 @@ function solutionsCard(solutions) {
   return card("Recommended solutions", "fix", wrap);
 }
 
-/* ---------- timeline chart ---------- */
+/* ---------- timeline chart (dark console style) ---------- */
 const SVGNS = "http://www.w3.org/2000/svg";
-const ERR_COLOR = "#D92D20", WARN_COLOR = "#D99A06";
+const ERR_COLOR = "#F04438", WARN_COLOR = "#E0A100";
 
 function svg(tag, attrs) {
   const e = document.createElementNS(SVGNS, tag);
@@ -440,24 +451,59 @@ function topRounded(x, y, w, h, r) {
   return `M${x},${y + h} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + h} Z`;
 }
 
+// Vertical gradient from full colour at the top to faded at the base
+function gradient(id, color, fade) {
+  const g = svg("linearGradient", { id, x1: 0, y1: 0, x2: 0, y2: 1 });
+  g.appendChild(svg("stop", { offset: 0, "stop-color": color }));
+  g.appendChild(svg("stop", { offset: 1, "stop-color": color, "stop-opacity": fade }));
+  return g;
+}
+
 function timelineCard(tl, box) {
+  const data = tl.buckets;
+  const errors = data.reduce((a, d) => a + d.errors, 0);
+  const warns = data.reduce((a, d) => a + d.warnings, 0);
+  const peak = data.reduce((b, d) => (d.errors + d.warnings > b.errors + b.warnings ? d : b), data[0]);
+
+  const s = el("section", "card console");
+  const head = el("div", "console-head");
+  const h = el("h3");
+  const ic = el("span", "ic");
+  ic.appendChild(icon("chart"));
+  h.appendChild(ic);
+  h.appendChild(document.createTextNode("Timeline"));
+  head.appendChild(h);
+  head.appendChild(el("span", "live", `incident window · ${data[0].time}–${data[data.length - 1].time}`));
+  s.appendChild(head);
+
+  const kpis = el("div", "kpis");
+  [["Errors", errors], ["Warnings", warns], ["Peak", peak.time]].forEach(([k, v]) => {
+    const d = el("div", "kpi");
+    d.appendChild(el("div", "k", k));
+    d.appendChild(el("div", "v", String(v)));
+    kpis.appendChild(d);
+  });
+  s.appendChild(kpis);
+  s.appendChild(box);
+
   const legend = el("div", "chart-legend");
   [["Errors", ERR_COLOR], ["Warnings", WARN_COLOR]].forEach(([name, color]) => {
-    const s = el("span");
+    const sp = el("span");
     const sw = el("i", "sw");
     sw.style.background = color;
-    s.appendChild(sw);
-    s.appendChild(document.createTextNode(name));
-    legend.appendChild(s);
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(name));
+    legend.appendChild(sp);
   });
   legend.appendChild(el("span", null, tl.bucket_minutes === 1 ? "per minute · click a bar to jump to the log" : `per ${tl.bucket_minutes} minutes · click a bar to jump to the log`));
-  return card("Timeline", "chart", legend, box);
+  s.appendChild(legend);
+  return s;
 }
 
 function drawTimeline(box, tl) {
   const data = tl.buckets;
-  const W = Math.max(300, box.clientWidth), H = 170;
-  const m = { top: 10, right: 4, bottom: 24, left: 28 };
+  const W = Math.max(300, box.clientWidth), H = 190;
+  const m = { top: 12, right: 4, bottom: 24, left: 28 };
   const pw = W - m.left - m.right, ph = H - m.top - m.bottom;
   const max = Math.max(1, ...data.map(d => d.errors + d.warnings));
   const ticks = max <= 4 ? max : 4;
@@ -465,14 +511,25 @@ function drawTimeline(box, tl) {
   const top = step * ticks;
   const y = v => m.top + ph - (v / top) * ph;
   const slot = pw / data.length;
-  const bw = Math.max(3, Math.min(28, slot * 0.7));
+  const bw = Math.max(3, Math.min(34, slot * 0.56));
 
   const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Errors and warnings over time" });
+  const defs = svg("defs", {});
+  defs.appendChild(gradient("tl-err", ERR_COLOR, 0.35));
+  defs.appendChild(gradient("tl-warn", WARN_COLOR, 0.55));
+  const glow = svg("filter", { id: "tl-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" });
+  glow.appendChild(svg("feGaussianBlur", { stdDeviation: 4, result: "b" }));
+  const merge = svg("feMerge", {});
+  merge.appendChild(svg("feMergeNode", { in: "b" }));
+  merge.appendChild(svg("feMergeNode", { in: "SourceGraphic" }));
+  glow.appendChild(merge);
+  defs.appendChild(glow);
+  s.appendChild(defs);
 
-  // Recessive grid and y labels
+  // Dashed grid and y labels, kept dim so the bars stand out
   for (let v = 0; v <= top; v += step) {
-    s.appendChild(svg("line", { x1: m.left, x2: W - m.right, y1: y(v), y2: y(v), stroke: v === 0 ? "#CBD5E1" : "#EEF2F7", "stroke-width": 1 }));
-    const t = svg("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#64748B" });
+    s.appendChild(svg("line", { x1: m.left, x2: W - m.right, y1: y(v), y2: y(v), stroke: v === 0 ? "#33466B" : "#22324F", "stroke-dasharray": v === 0 ? "" : "2 4" }));
+    const t = svg("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#7C8BA5" });
     t.textContent = v;
     s.appendChild(t);
   }
@@ -480,33 +537,34 @@ function drawTimeline(box, tl) {
   // Show at most about 8 time labels
   const every = Math.ceil(data.length / 8);
   const tip = el("div", "tip hidden");
+  const groups = [];
 
   data.forEach((d, i) => {
     const cx = m.left + slot * i + slot / 2, x = cx - bw / 2;
-    const g = svg("g", {});
+    const g = svg("g", { filter: "url(#tl-glow)" });
     const total = d.errors + d.warnings;
     // Errors sit on the baseline, warnings stack on top with a 2px gap
     if (d.errors) {
       const h = y(0) - y(d.errors);
-      const isTop = !d.warnings;
-      g.appendChild(isTop
-        ? svg("path", { d: topRounded(x, y(d.errors), bw, h, 4), fill: ERR_COLOR })
-        : svg("rect", { x, y: y(d.errors), width: bw, height: h, fill: ERR_COLOR }));
+      g.appendChild(d.warnings
+        ? svg("rect", { x, y: y(d.errors), width: bw, height: h, fill: "url(#tl-err)" })
+        : svg("path", { d: topRounded(x, y(d.errors), bw, h, 5), fill: "url(#tl-err)" }));
     }
     if (d.warnings) {
       const base = d.errors ? y(d.errors) - 2 : y(0);
-      const h = Math.max(1, (d.warnings / top) * ph - (d.errors ? 2 : 0));
-      g.appendChild(svg("path", { d: topRounded(x, base - h, bw, h, 4), fill: WARN_COLOR }));
+      const h = Math.max(1, base - y(total));
+      g.appendChild(svg("path", { d: topRounded(x, base - h, bw, h, 5), fill: "url(#tl-warn)" }));
     }
+    groups.push(g);
     if (i % every === 0) {
-      const t = svg("text", { x: cx, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: "#64748B" });
+      const t = svg("text", { x: cx, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: "#7C8BA5" });
       t.textContent = d.time;
       s.appendChild(t);
     }
     // Hit area is the whole column, bigger than the bar
     const hit = svg("rect", { x: m.left + slot * i, y: m.top, width: slot, height: ph, fill: "transparent", class: d.first_line ? "bar" : "" });
     hit.addEventListener("mouseenter", () => {
-      g.setAttribute("opacity", "0.8");
+      groups.forEach((other, j) => other.setAttribute("opacity", j === i ? 1 : 0.35));
       tip.textContent = "";
       tip.appendChild(el("b", null, d.time + (tl.bucket_minutes > 1 ? ` (+${tl.bucket_minutes} min)` : "")));
       [["errors", d.errors, ERR_COLOR], ["warnings", d.warnings, WARN_COLOR]].forEach(([n, v, c]) => {
@@ -523,7 +581,7 @@ function drawTimeline(box, tl) {
       tip.style.top = (total ? y(total) : y(0)) * scale + "px";
       tip.classList.remove("hidden");
     });
-    hit.addEventListener("mouseleave", () => { g.removeAttribute("opacity"); tip.classList.add("hidden"); });
+    hit.addEventListener("mouseleave", () => { groups.forEach(other => other.removeAttribute("opacity")); tip.classList.add("hidden"); });
     if (d.first_line) hit.addEventListener("click", () => jumpTo(d.first_line));
     s.appendChild(g);
     s.appendChild(hit);
@@ -532,6 +590,15 @@ function drawTimeline(box, tl) {
   box.textContent = "";
   box.appendChild(s);
   box.appendChild(tip);
+
+  // Redraw when the card changes width (window resize, phone rotation)
+  box.dataset.width = box.clientWidth;
+  if (!box.observer) {
+    box.observer = new ResizeObserver(() => {
+      if (box.isConnected && String(box.clientWidth) !== box.dataset.width) drawTimeline(box, tl);
+    });
+    box.observer.observe(box);
+  }
 }
 
 function render(r) {
