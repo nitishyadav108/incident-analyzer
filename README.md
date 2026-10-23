@@ -4,7 +4,7 @@ Paste application logs and get a structured incident report: severity, likely ca
 
 **Live demo:** https://incident-analyzer.onrender.com
 
-![Incident Analyzer home screen](project_screenshots/Screenshot%202026-10-23%20at%203.09.13%20PM.png)
+![Incident Analyzer home screen](project_screenshots/01_home.png)
 
 ---
 
@@ -61,7 +61,7 @@ sequenceDiagram
 
 The log is shown with line numbers. Red lines are errors, amber lines are warnings, and a blue edge marks the lines the report uses as evidence:
 
-![Report with severity, summary and likely cause](project_screenshots/Screenshot%202026-10-23%20at%203.09.40%20PM.png)
+![Report with severity, summary and likely cause](project_screenshots/02_report.png)
 
 ---
 
@@ -101,11 +101,11 @@ flowchart LR
 
 **Errors and warnings table:** counted by code, not by the AI:
 
-![Errors and warnings table](project_screenshots/Screenshot%202026-10-23%20at%203.09.56%20PM.png)
+![Errors and warnings table](project_screenshots/03_errors_table.png)
 
 **Troubleshooting steps, escalation and team message:**
 
-![Steps, escalation and team message](project_screenshots/Screenshot%202026-10-23%20at%203.10.04%20PM.png)
+![Steps, escalation and team message](project_screenshots/04_escalation.png)
 
 ---
 
