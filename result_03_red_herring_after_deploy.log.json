@@ -1,0 +1,72 @@
+{
+  "summary": "The payment-api and media-service are experiencing multiple errors following a recent deployment. Specifically, media-service is failing to generate thumbnails due to unsupported formats, and payment-api is failing card authorisations due to a null merchant_category_map.",
+  "likely_cause": {
+    "statement": "Card authorisations are failing because the merchant_category_map is null, possibly related to the recent release v2.14.0 deployment.",
+    "confidence": "medium",
+    "evidence": [
+      {
+        "line": 5,
+        "quote": "ERROR payment-api     Card authorisation failed txn=TXN-51002: merchant_category_map is null"
+      }
+    ],
+    "assumptions": [
+      "The null merchant_category_map is a configuration or code defect introduced in release v2.14.0."
+    ]
+  },
+  "missing_information": [
+    "Stack traces for the payment-api and media-service errors",
+    "Database connection status and configuration values for payment-api"
+  ],
+  "severity": {
+    "level": "High",
+    "reason": "Core card authorisation transactions are failing across multiple transaction IDs, indicating a significant impact on payment processing capabilities."
+  },
+  "troubleshooting_steps": [
+    {
+      "step": 1,
+      "action": "Check payment-api configuration and database state for merchant category mapping",
+      "why": "To determine why merchant_category_map is null during card authorisation requests."
+    },
+    {
+      "step": 2,
+      "action": "Review media-service image ingestion pipelines",
+      "why": "To identify why unsupported image formats are causing thumbnail generation failures."
+    }
+  ],
+  "escalation": {
+    "required": true,
+    "team": "Payments Engineering / Backend Tier 2",
+    "when": "Immediate escalation due to recurring payment-api authorisation failures."
+  },
+  "incident_summary": "INCIDENT: payment-api experiencing card authorisation failures due to null merchant_category_map alongside media-service thumbnail generation errors following release v2.14.0 deployment.",
+  "suspicious_content": null,
+  "key_errors": [
+    {
+      "pattern": "ERROR media-service Thumbnail generation failed for image=img_#.png: unsupported format",
+      "count": 6,
+      "first_seen": "2026-10-21 10:01:10",
+      "last_seen": "2026-10-21 10:04:40",
+      "lines": [
+        3,
+        4,
+        6,
+        8,
+        10,
+        12
+      ]
+    },
+    {
+      "pattern": "ERROR payment-api Card authorisation failed txn=TXN-#: merchant_category_map is null",
+      "count": 5,
+      "first_seen": "2026-10-21 10:02:05",
+      "last_seen": "2026-10-21 10:05:02",
+      "lines": [
+        5,
+        7,
+        9,
+        11,
+        13
+      ]
+    }
+  ]
+}

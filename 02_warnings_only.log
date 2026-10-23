@@ -1,0 +1,8 @@
+2026-10-20 09:15:02 INFO  order-service   Order created order=ORD-71002
+2026-10-20 09:15:40 WARN  order-service   Response time 1250ms for GET /orders (threshold 1000ms)
+2026-10-20 09:22:11 INFO  order-service   Order created order=ORD-71009
+2026-10-20 09:31:07 WARN  cache           Cache hit ratio dropped to 78% (expected > 85%)
+2026-10-20 09:44:53 WARN  order-service   Response time 1100ms for GET /orders (threshold 1000ms)
+2026-10-20 09:50:20 INFO  order-service   Order created order=ORD-71033
+2026-10-20 10:02:18 WARN  disk-monitor    /var/log usage at 72%
+2026-10-20 10:15:00 INFO  order-service   Health check OK

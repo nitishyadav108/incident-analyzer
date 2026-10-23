@@ -1,0 +1,13 @@
+2026-10-21 10:00:00 INFO  deploy          Release v2.14.0 deployed to payment-api (3 instances)
+2026-10-21 10:00:45 INFO  payment-api     Service started, config loaded
+2026-10-21 10:01:10 ERROR media-service   Thumbnail generation failed for image=img_5521.png: unsupported format
+2026-10-21 10:01:30 ERROR media-service   Thumbnail generation failed for image=img_5522.png: unsupported format
+2026-10-21 10:02:05 ERROR payment-api     Card authorisation failed txn=TXN-51002: merchant_category_map is null
+2026-10-21 10:02:06 ERROR media-service   Thumbnail generation failed for image=img_5523.png: unsupported format
+2026-10-21 10:02:44 ERROR payment-api     Card authorisation failed txn=TXN-51006: merchant_category_map is null
+2026-10-21 10:03:10 ERROR media-service   Thumbnail generation failed for image=img_5524.png: unsupported format
+2026-10-21 10:03:31 ERROR payment-api     Card authorisation failed txn=TXN-51011: merchant_category_map is null
+2026-10-21 10:03:50 ERROR media-service   Thumbnail generation failed for image=img_5525.png: unsupported format
+2026-10-21 10:04:12 ERROR payment-api     Card authorisation failed txn=TXN-51015: merchant_category_map is null
+2026-10-21 10:04:40 ERROR media-service   Thumbnail generation failed for image=img_5526.png: unsupported format
+2026-10-21 10:05:02 ERROR payment-api     Card authorisation failed txn=TXN-51019: merchant_category_map is null
