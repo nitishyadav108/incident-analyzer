@@ -170,6 +170,30 @@
   .kind-tag > span { color: var(--kind); }
   .disclaim { margin-top: 14px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
 
+  /* Sample logs */
+  .samples { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: #FAFBFD; font-size: 12.5px; color: var(--muted); }
+  .samples button { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; }
+  .source { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, .7); border: 1px solid var(--line); color: var(--muted); }
+
+  /* Evidence check */
+  .vmark { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .vmark.ok { background: var(--ok-bg); color: var(--low); }
+  .vmark.bad { background: var(--warn-bg); color: var(--med); }
+  .vcheck { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  .vcheck.all { color: var(--low); }
+  .vcheck.some { color: var(--med); }
+
+  /* Timeline chart */
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .bar { cursor: pointer; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .tip { position: absolute; pointer-events: none; background: #0F1B2D; color: #fff; font-size: 12.5px; padding: 8px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 4px 14px rgba(15, 27, 45, .25); transform: translate(-50%, calc(-100% - 10px)); z-index: 2; }
+  .tip b { font-weight: 600; }
+  .tip .row { display: flex; align-items: center; gap: 6px; }
+  .tip .hint { color: #A9B7CC; margin-top: 2px; }
+
   dl.esc { display: grid; grid-template-columns: 90px 1fr; gap: 8px 12px; margin: 0; }
   dl.esc dt { color: var(--muted); } dl.esc dd { margin: 0; }
   .pill { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 13px; font-weight: 500; }
@@ -211,6 +235,7 @@
       <input type="file" id="file" accept=".log,.txt,text/plain">
       <button id="go" class="primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Analyze</span></button>
     </div>
+    <div id="samples" class="samples hidden"><span>Try a sample:</span></div>
     <textarea id="editor" spellcheck="false" placeholder="Paste application logs here, drop a file, or upload one. Press Ctrl+Enter or Cmd+Enter to analyze."></textarea>
     <div id="viewer" class="hidden"></div>
     <div id="legend" class="legend hidden">
@@ -225,7 +250,7 @@
     <div class="empty">
       <div class="art"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="7 15 10 15 11.5 12 13 17 14.5 15 17 15"/></svg></div>
       <h2>No analysis yet</h2>
-      <p>Paste a log or upload a file, then select Analyze. You will get the severity, the likely cause with its evidence, troubleshooting steps, recommended solutions and who to escalate to.</p>
+      <p>Paste a log, upload a file or pick a sample, then select Analyze. You will get the severity, the likely cause with its evidence, troubleshooting steps, recommended solutions and who to escalate to.</p>
       <div class="features"><span>Severity</span><span>Likely cause</span><span>Evidence links</span><span>Recommended solutions</span><span>Escalation</span></div>
     </div>
   </section>
@@ -248,6 +273,7 @@ const ICONS = {
   summary: '<path d="M4 6h16M4 12h16M4 18h10"/>',
   cause: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
   table: '<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/>',
+  chart: '<line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="11" width="3" height="9"/><rect x="11" y="6" width="3" height="14"/><rect x="16" y="14" width="3" height="6"/>',
   steps: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   fix: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
   escalate: '<path d="M12 19V5"/><polyline points="5 12 12 5 19 12"/>',
@@ -267,6 +293,7 @@ function icon(name, size = 16) {
 
 /* ---------- log viewer ---------- */
 function showEditor() {
+  if ($("samples").children.length > 1) $("samples").classList.remove("hidden");
   viewer.classList.add("hidden");
   $("legend").classList.add("hidden");
   $("edit").classList.add("hidden");
@@ -288,6 +315,7 @@ function showViewer(text, cited) {
     row.appendChild(el("span", "tx", line));
     viewer.appendChild(row);
   });
+  $("samples").classList.add("hidden");
   $("count").textContent = lines.length + " lines";
   $("count").classList.remove("hidden");
   editor.classList.add("hidden");
@@ -396,6 +424,116 @@ function solutionsCard(solutions) {
   return card("Recommended solutions", "fix", wrap);
 }
 
+/* ---------- timeline chart ---------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+const ERR_COLOR = "#D92D20", WARN_COLOR = "#D99A06";
+
+function svg(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  return e;
+}
+
+// A bar segment with rounded top corners and a square base
+function topRounded(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + h} Z`;
+}
+
+function timelineCard(tl, box) {
+  const legend = el("div", "chart-legend");
+  [["Errors", ERR_COLOR], ["Warnings", WARN_COLOR]].forEach(([name, color]) => {
+    const s = el("span");
+    const sw = el("i", "sw");
+    sw.style.background = color;
+    s.appendChild(sw);
+    s.appendChild(document.createTextNode(name));
+    legend.appendChild(s);
+  });
+  legend.appendChild(el("span", null, tl.bucket_minutes === 1 ? "per minute · click a bar to jump to the log" : `per ${tl.bucket_minutes} minutes · click a bar to jump to the log`));
+  return card("Timeline", "chart", legend, box);
+}
+
+function drawTimeline(box, tl) {
+  const data = tl.buckets;
+  const W = Math.max(300, box.clientWidth), H = 170;
+  const m = { top: 10, right: 4, bottom: 24, left: 28 };
+  const pw = W - m.left - m.right, ph = H - m.top - m.bottom;
+  const max = Math.max(1, ...data.map(d => d.errors + d.warnings));
+  const ticks = max <= 4 ? max : 4;
+  const step = Math.ceil(max / ticks);
+  const top = step * ticks;
+  const y = v => m.top + ph - (v / top) * ph;
+  const slot = pw / data.length;
+  const bw = Math.max(3, Math.min(28, slot * 0.7));
+
+  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Errors and warnings over time" });
+
+  // Recessive grid and y labels
+  for (let v = 0; v <= top; v += step) {
+    s.appendChild(svg("line", { x1: m.left, x2: W - m.right, y1: y(v), y2: y(v), stroke: v === 0 ? "#CBD5E1" : "#EEF2F7", "stroke-width": 1 }));
+    const t = svg("text", { x: m.left - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#64748B" });
+    t.textContent = v;
+    s.appendChild(t);
+  }
+
+  // Show at most about 8 time labels
+  const every = Math.ceil(data.length / 8);
+  const tip = el("div", "tip hidden");
+
+  data.forEach((d, i) => {
+    const cx = m.left + slot * i + slot / 2, x = cx - bw / 2;
+    const g = svg("g", {});
+    const total = d.errors + d.warnings;
+    // Errors sit on the baseline, warnings stack on top with a 2px gap
+    if (d.errors) {
+      const h = y(0) - y(d.errors);
+      const isTop = !d.warnings;
+      g.appendChild(isTop
+        ? svg("path", { d: topRounded(x, y(d.errors), bw, h, 4), fill: ERR_COLOR })
+        : svg("rect", { x, y: y(d.errors), width: bw, height: h, fill: ERR_COLOR }));
+    }
+    if (d.warnings) {
+      const base = d.errors ? y(d.errors) - 2 : y(0);
+      const h = Math.max(1, (d.warnings / top) * ph - (d.errors ? 2 : 0));
+      g.appendChild(svg("path", { d: topRounded(x, base - h, bw, h, 4), fill: WARN_COLOR }));
+    }
+    if (i % every === 0) {
+      const t = svg("text", { x: cx, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: "#64748B" });
+      t.textContent = d.time;
+      s.appendChild(t);
+    }
+    // Hit area is the whole column, bigger than the bar
+    const hit = svg("rect", { x: m.left + slot * i, y: m.top, width: slot, height: ph, fill: "transparent", class: d.first_line ? "bar" : "" });
+    hit.addEventListener("mouseenter", () => {
+      g.setAttribute("opacity", "0.8");
+      tip.textContent = "";
+      tip.appendChild(el("b", null, d.time + (tl.bucket_minutes > 1 ? ` (+${tl.bucket_minutes} min)` : "")));
+      [["errors", d.errors, ERR_COLOR], ["warnings", d.warnings, WARN_COLOR]].forEach(([n, v, c]) => {
+        const row = el("div", "row");
+        const sw = el("i", "sw");
+        sw.style.background = c;
+        row.appendChild(sw);
+        row.appendChild(el("span", null, `${v} ${n}`));
+        tip.appendChild(row);
+      });
+      if (d.first_line) tip.appendChild(el("div", "hint", "Click to jump to " + pad(d.first_line)));
+      const scale = box.clientWidth / W;
+      tip.style.left = cx * scale + "px";
+      tip.style.top = (total ? y(total) : y(0)) * scale + "px";
+      tip.classList.remove("hidden");
+    });
+    hit.addEventListener("mouseleave", () => { g.removeAttribute("opacity"); tip.classList.add("hidden"); });
+    if (d.first_line) hit.addEventListener("click", () => jumpTo(d.first_line));
+    s.appendChild(g);
+    s.appendChild(hit);
+  });
+
+  box.textContent = "";
+  box.appendChild(s);
+  box.appendChild(tip);
+}
+
 function render(r) {
   report.textContent = "";
   const sheet = el("article", "sheet");
@@ -414,6 +552,12 @@ function render(r) {
   bt.appendChild(el("div", "label", "Severity"));
   bt.appendChild(el("h2", null, lvl));
   bt.appendChild(el("p", null, (r.severity && r.severity.reason) || ""));
+  if (r.sample || r.cached) {
+    const src = el("span", "source");
+    src.appendChild(icon("info", 13));
+    src.appendChild(el("span", null, r.sample ? "Saved sample result · no API call used" : "Same log as before · reused result, no API call used"));
+    bt.appendChild(src);
+  }
   banner.appendChild(bt);
   hero.appendChild(banner);
 
@@ -430,6 +574,10 @@ function render(r) {
   stats.appendChild(stat("Escalate", el("span", "pill " + (esc.required ? "yes" : "no"), esc.required ? "Yes" : "No")));
   hero.appendChild(stats);
   sheet.appendChild(hero);
+
+  const tl = r.timeline;
+  const chartBox = tl && tl.buckets && tl.buckets.length > 1 ? el("div", "chart") : null;
+  if (chartBox) sheet.appendChild(timelineCard(tl, chartBox));
 
   if (r.suspicious_content) {
     const n = el("div", "notice");
@@ -455,11 +603,27 @@ function render(r) {
     const ul = el("ul", "ev");
     lc.evidence.forEach(e => {
       const li = el("li");
+      if (e.verified !== undefined) {
+        const v = el("span", "vmark " + (e.verified ? "ok" : "bad"), e.verified ? "✓" : "!");
+        v.title = e.verified ? "Quote found on this line" : "Quote not found on this line. Check it manually.";
+        v.setAttribute("aria-label", v.title);
+        li.appendChild(v);
+      }
       li.appendChild(refButton(e.line));
       li.appendChild(el("code", null, e.quote));
       ul.appendChild(li);
     });
     cause.appendChild(ul);
+    const ec = r.evidence_check;
+    if (ec && ec.total) {
+      const all = ec.verified === ec.total;
+      const note = el("p", "vcheck " + (all ? "all" : "some"));
+      note.appendChild(icon(all ? "check" : "alert", 14));
+      note.appendChild(el("span", null, all
+        ? `All ${ec.total} quotes checked against the log by code`
+        : `${ec.verified} of ${ec.total} quotes found in the log. Check the ones marked ! manually`));
+      cause.appendChild(note);
+    }
   }
   if ((lc.assumptions || []).length) {
     const a = el("div", "assume");
@@ -536,6 +700,7 @@ function render(r) {
 
   sheet.appendChild(el("div", "foot", "Error counts are calculated by code. Cause, severity, steps and solutions are written by an AI model and should be checked against the log."));
   report.appendChild(sheet);
+  if (chartBox) drawTimeline(chartBox, tl); // drawn after it is on the page so it can measure its width
   report.scrollTop = 0;
 }
 
@@ -596,6 +761,37 @@ async function loadFile(f) {
   editor.value = await f.text();
   showEditor();
 }
+
+// Samples show a saved result straight away, so they never use the AI quota
+async function openSample(id) {
+  try {
+    const res = await fetch("/samples/" + id);
+    const s = await res.json();
+    if (!res.ok) throw new Error(s.error || "Could not load the sample.");
+    editor.value = s.log;
+    const cited = new Set(((s.result.likely_cause || {}).evidence || []).map(e => e.line));
+    showViewer(s.log, cited);
+    render(s.result);
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+async function loadSamples() {
+  try {
+    const list = await (await fetch("/samples")).json();
+    list.forEach(s => {
+      const b = el("button", null, s.name);
+      b.type = "button";
+      b.addEventListener("click", () => openSample(s.id));
+      $("samples").appendChild(b);
+    });
+    if (list.length && !editor.classList.contains("hidden")) $("samples").classList.remove("hidden");
+  } catch (e) {
+    // No samples available; the bar stays hidden
+  }
+}
+loadSamples();
 
 $("go").addEventListener("click", analyze);
 $("edit").addEventListener("click", showEditor);
