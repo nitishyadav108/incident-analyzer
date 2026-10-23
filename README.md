@@ -65,9 +65,9 @@ The log is shown with line numbers. Red lines are errors, amber lines are warnin
 
 ![Errors and warnings table](project_screenshots/03_errors_table.png)
 
-**Troubleshooting steps, escalation and team message:**
+**Recommended solutions:** immediate and long-term fixes, each with a risk level and links to the log lines it addresses, followed by escalation and a ready-to-share team message:
 
-![Steps, escalation and team message](project_screenshots/04_escalation.png)
+![Recommended solutions, escalation and team message](project_screenshots/04_escalation.png)
 
 ---
 
