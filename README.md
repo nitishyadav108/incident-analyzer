@@ -24,9 +24,9 @@ flowchart LR
     E -- yes --> F["Add code counts<br/>check quotes"]
     F --> G[/"📄 Report"/]
 
-    style C fill:#E3F4EA,stroke:#1B7A4B
-    style F fill:#E3F4EA,stroke:#1B7A4B
-    style D fill:#E6EFF9,stroke:#1F5FA8
+    style C fill:#E3F4EA,stroke:#1B7A4B,color:#0F1B2D
+    style F fill:#E3F4EA,stroke:#1B7A4B,color:#0F1B2D
+    style D fill:#E6EFF9,stroke:#1F5FA8,color:#0F1B2D
 ```
 
 🟩 green = plain code (exact), 🟦 blue = AI
