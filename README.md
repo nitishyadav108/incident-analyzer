@@ -4,26 +4,29 @@ Paste application logs and get a structured incident report: severity, likely ca
 
 **Live demo:** https://incident-analyzer.onrender.com
 
+## About the project
+
+The tool is built for L1/L2 Technology Operations engineers. During an incident they must read hundreds of noisy log lines to decide what is broken and whether to escalate. The tool gives an answer in seconds and cites the line number for each fact, so the engineer can check the answer instead of trusting it.
+
+The key design choice is that **code counts and the AI explains**. LLMs are unreliable at counting, so all error counting is done by `countErrors.js`. The prompt keeps evidence separate from assumptions and treats log text as untrusted, so instructions hidden in a log are flagged, not followed.
+
 ---
 
 ## 1. The analysis pipeline
 
 ```mermaid
-flowchart TD
-    IN[/"Raw log text"/] --> V{"Empty or<br/>> 100k chars?"}
-    V -- yes --> ERR["❌ Reject with a clear error"]
-    V -- no --> N["1️⃣ Number every line<br/>L001, L002, ..."]
-    N --> C["2️⃣ Count errors & warnings in code<br/>countErrors.js"]
-    C --> M["3️⃣ Build the message<br/>statistics + numbered log"]
-    M --> LLM["4️⃣ Gemini with prompt.md<br/>temperature 0, JSON only"]
-    LLM --> J{"5️⃣ Valid JSON?"}
-    J -- no --> ERR2["❌ 'The AI did not return valid JSON'"]
-    J -- yes --> O["6️⃣ Replace key_errors<br/>with the code's numbers"]
-    O --> OUT[/"📄 Final report → browser"/]
+flowchart LR
+    A[/"Log"/] --> B["Check size<br/>number lines"]
+    B --> C["Count errors<br/>in code"]
+    C --> D["Gemini writes<br/>the report"]
+    D --> E{"Valid<br/>JSON?"}
+    E -- no --> X["❌ Error"]
+    E -- yes --> F["Add code counts<br/>check quotes"]
+    F --> G[/"📄 Report"/]
 
     style C fill:#E3F4EA,stroke:#1B7A4B
-    style O fill:#E3F4EA,stroke:#1B7A4B
-    style LLM fill:#E6EFF9,stroke:#1F5FA8
+    style F fill:#E3F4EA,stroke:#1B7A4B
+    style D fill:#E6EFF9,stroke:#1F5FA8
 ```
 
 🟩 green = plain code (exact), 🟦 blue = AI
@@ -120,10 +123,6 @@ I wrote five test logs and decided the expected result for each **before** runni
 
 ---
 
-## About the project
+## Run locally
 
-The tool is built for L1/L2 Technology Operations engineers. During an incident they must read hundreds of noisy log lines to decide what is broken and whether to escalate. The tool gives an answer in seconds and cites the line number for each fact, so the engineer can check the answer instead of trusting it.
-
-The key design choice is that **code counts and the AI explains**. LLMs are unreliable at counting, so all error counting is done by `countErrors.js`. The prompt keeps evidence separate from assumptions and treats log text as untrusted, so instructions hidden in a log are flagged, not followed.
-
-**Run locally:** `npm install`, add `GEMINI_API_KEY=your-key` to a `.env` file, run `node server.js`, then open http://localhost:3000.
+`npm install`, add `GEMINI_API_KEY=your-key` to a `.env` file, run `node server.js`, then open http://localhost:3000.
